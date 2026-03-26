@@ -1,0 +1,71 @@
+{% comment %}
+  Watch & Win Dev Preview
+  -----------------------
+  Localhost only. Visit any page with ?ww=1 to see Watch & Win.
+  Example: http://127.0.0.1:9292/?ww=1
+
+  Include this in layout/theme.liquid
+{% endcomment %}
+
+<script>
+// Immediately hide main content if ?ww=1 — prevents flash of homepage
+(function() {
+  var isDev = ['localhost','127.0.0.1'].indexOf(window.location.hostname) !== -1 || window.location.hostname.endsWith('.local');
+  if (isDev && new URLSearchParams(window.location.search).get('ww') === '1') {
+    document.write('<style>main,[role="main"],#MainContent,.main-content{visibility:hidden;min-height:100vh}</style>');
+  }
+})();
+</script>
+
+<script>
+(function() {
+  var hostname = window.location.hostname;
+  var isDev = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local');
+  if (!isDev) return;
+
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('ww') !== '1') return;
+
+  window.__PCH_DATA__ = {
+    customerId: null,
+    customerEmail: '',
+    loggedIn: false,
+    tier: 'gold'
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Replace main content area with Watch & Win mount point
+    var main = document.querySelector('main')
+      || document.querySelector('[role="main"]')
+      || document.querySelector('#MainContent')
+      || document.querySelector('.main-content');
+
+    if (main) {
+      main.innerHTML = '<div id="watch-and-win-root" style="max-width:none;width:100%;margin:0;padding:0;"></div>';
+      main.style.visibility = 'visible';
+      main.style.maxWidth = 'none';
+      main.style.width = '100%';
+      main.style.margin = '0';
+      main.style.padding = '0';
+    } else {
+      // Fallback — find the content area between header and footer
+      var header = document.querySelector('header-component') || document.querySelector('header');
+      if (header && header.nextElementSibling) {
+        header.nextElementSibling.innerHTML = '<div id="watch-and-win-root"></div>';
+        header.nextElementSibling.style.visibility = 'visible';
+      }
+    }
+
+    // Load CSS
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = {{ 'watch-and-win.css' | asset_url | json }};
+    document.head.appendChild(link);
+
+    // Load JS
+    var script = document.createElement('script');
+    script.src = {{ 'watch-and-win.js' | asset_url | json }};
+    document.body.appendChild(script);
+  });
+})();
+</script>

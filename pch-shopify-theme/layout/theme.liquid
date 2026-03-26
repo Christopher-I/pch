@@ -1,0 +1,177 @@
+{%- comment -%}
+This file has been modified by the Yoast SEO for Shopify app.
+You can learn more about this (and learn how to cleanly revert these changes) at https://yoa.st/removing-theme-changes.
+{%- endcomment -%}
+<!doctype html>
+<html
+  class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}"
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+{% render 'replo-head' %}
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-N5FJB7NN');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Google tag (gtag.js) -->
+    {{ 'price-fetch.js' | asset_url | preload_tag: as: 'script', crossorigin: 'anonymous' }}
+
+    <script src="{{ 'price-fetch.js' | asset_url }}" defer crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q5E27M3DQM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Q5E27M3DQM');
+    </script>
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    <link
+      rel="expect"
+      href="#MainContent"
+      blocking="render"
+      id="view-transition-render-blocker"
+    >
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {%- comment -%} Organization Schema for Google SEO - Homepage only {%- endcomment -%}
+    {% if template == 'index' %}
+      {%- comment -%}Yoast SEO schema control block: start.{%- endcomment -%}
+{%- assign yoast_seo_settings = shop.metafields.yoast_seo.settings.value | default: shop.metafields.yoast_seo.settings -%}
+{%- if disabled_by_yoast_seo or yoast_seo_settings.schema.useTheme.schema or yoast_seo_settings.schema.useTheme.website -%}
+<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "PCH Shopping",
+        "url": "https://www.pchshopping.com/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.pchshopping.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+      {%- comment -%}Yoast SEO schema control block: end.{%- endcomment -%}
+</script>
+{%- endif -%}
+      {%- comment -%}Yoast SEO schema control block: start.{%- endcomment -%}
+{%- assign yoast_seo_settings = shop.metafields.yoast_seo.settings.value | default: shop.metafields.yoast_seo.settings -%}
+{%- if disabled_by_yoast_seo or yoast_seo_settings.schema.useTheme.schema or yoast_seo_settings.schema.useTheme.organization -%}
+<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "PCH Shopping",
+        "url": "https://www.pchshopping.com/",
+        "logo": "https://www.pchshopping.com/cdn/shop/files/PCH_icon-orange-512x512.png?crop=center&height=32&v=1765566578&width=32",
+        "sameAs": [
+          "https://www.facebook.com/pch",
+          "https://www.instagram.com/pchoffical"
+        ]
+      }
+      {%- comment -%}Yoast SEO schema control block: end.{%- endcomment -%}
+</script>
+{%- endif -%}
+    {% endif %}
+
+    {{ content_for_header }}
+  </head>
+
+  {%- liquid
+    # ========== DETERMINE MEMBERSHIP STATUS ==========
+    # Get real customer membership tier (preview mode handled by JS)
+    assign customer_tier = 'none'
+    assign customer_multiplier = 1
+
+    if customer
+      if customer.tags contains 'platinum-membership'
+        assign customer_tier = 'platinum'
+        assign customer_multiplier = settings.membership_multiplier_platinum | default: 4
+      elsif customer.tags contains 'gold-membership'
+        assign customer_tier = 'gold'
+        assign customer_multiplier = settings.membership_multiplier_gold | default: 3
+      elsif customer.tags contains 'silver-membership'
+        assign customer_tier = 'silver'
+        assign customer_multiplier = settings.membership_multiplier_silver | default: 2
+      endif
+    endif
+  -%}
+  {%- render 'member-preview' -%}
+  {%- render 'watch-and-win' -%}
+  <body
+    class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}"
+    data-membership-tier="{{ customer_tier }}"
+    data-membership-multiplier="{{ customer_multiplier }}"
+    data-membership-multiplier-enabled="{{ settings.membership_multiplier_enabled | default: true }}"
+  >
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N5FJB7NN"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <script
+      src="{{ 'critical.js' | asset_url }}"
+      type="module"
+      async
+      blocking="render"
+    ></script>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+
+    <script defer src="{{ 'checkout-flags.js' | asset_url }}"></script>
+    <script>
+      window.PCH_CART_VARIANT_IDS = [{% for item in cart.items %}{{ item.variant_id }}{% unless forloop.last %},{% endunless %}{% endfor %}];
+    </script>
+    <script defer src="{{ 'membership-duplicate-guard.js' | asset_url }}"></script>
+    {% if request.page_type == 'cart' %}
+      <script>
+        window.CUSTOMER_TAGS = {% if customer %}{{ customer.tags | json }}{% else %}[]{% endif %};
+      </script>
+      <script defer src="{{ 'cart-reward-cleanup.js' | asset_url }}"></script>
+      {% render 'cart-duplicate-notice' %}
+    {% endif %}
+  </body>
+</html>

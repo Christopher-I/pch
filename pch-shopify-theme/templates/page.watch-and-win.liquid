@@ -1,0 +1,25 @@
+{% comment %}
+  Watch & Win Page Template
+  -------------------------
+  Dev-only: content only renders on localhost.
+  On production, the page exists but shows nothing.
+
+  Usage:
+  1. Create a page in Shopify admin called "Watch and Win"
+  2. Assign this template (page.watch-and-win)
+  3. Run `shopify theme dev` to see it locally
+{% endcomment %}
+
+<script>
+  window.__PCH_DATA__ = {
+    customerId: {{ customer.id | default: 'null' }},
+    customerEmail: {{ customer.email | default: '""' | json }},
+    loggedIn: {% if customer %}true{% else %}false{% endif %},
+    tier: {{ customer.metafields.pch.tier | default: '"gold"' | json }}
+  };
+</script>
+
+<div id="watch-and-win-root"></div>
+
+{{ 'watch-and-win.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'watch-and-win.js' | asset_url }}" defer></script>
