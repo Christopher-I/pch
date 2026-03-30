@@ -1,0 +1,903 @@
+{%- liquid
+  assign block_settings = block.settings
+  assign product_resource = closest.product
+  assign selected_variant = product_resource.selected_or_first_available_variant
+-%}
+
+{% liquid
+  if block_settings.type_preset == 'rte' or block_settings.type_preset == 'paragraph'
+    assign is_rte = true
+  endif
+
+  capture text_block_classes
+    if block_settings.width == '100%'
+      echo 'text-block--align-' | append: block_settings.alignment
+      if block_settings.max_width == 'none'
+        echo ' text-block--full-width'
+      endif
+    endif
+    if block_settings.type_preset == 'custom'
+      echo ' custom-typography'
+      if block_settings.font_size != ''
+        echo ' custom-font-size'
+      endif
+      if block_settings.color != ''
+        echo ' custom-color'
+      endif
+    endif
+    if block_settings.background
+      echo ' text-block--background'
+    endif
+    if is_rte
+      echo ' rte'
+    endif
+  endcapture
+%}
+
+<product-price
+  class="text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
+  data-block-id="{{ block.id }}"
+  data-product-id="{{ product_resource.id }}"
+  style="
+    {% render 'typography-style', settings: block_settings %}
+    {% render 'spacing-style', settings: block_settings %}
+    --width: {{ block_settings.width }};
+  "
+  {{ block.shopify_attributes }}
+>
+  <style>
+        /* scoped hidden so we don't affect other theme elements */
+        .cs-entries-widget .hidden { display: none !important; }
+
+        .cs-entries-widget {
+          --cs-badge-base: {{ settings.cs_collection_badge_base | default: '#FFBC02' }};
+          --cs-badge-text: {{ settings.cs_collection_badge_text | default: '#ffffff' }};
+          --cs-mult-bg: {{ settings.cs_collection_multiplier_bg | default: 'rgba(0,0,0,0.2)' }};
+          --cs-mult-text: {{ settings.cs_collection_multiplier_text | default: '#ffffff' }};
+          --cs-shimmer-highlight: {{ settings.cs_shimmer_highlight | default: '#fafafa' }};
+        }
+
+        .cs-entries-widget .product-card-entries {
+          background: var(--cs-badge-base);
+          color: var(--cs-badge-text);
+
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: fit-content;
+          max-width: 100%;
+          min-width: 0;
+          height: 34px;
+
+          padding: 0 0.75rem;
+          margin: 0.4rem 0;
+          text-align: center;
+          position: relative;
+          border-radius: 6px;
+          box-shadow: 0 10px 18px rgba(0,0,0,.14);
+          text-transform: uppercase;
+          box-sizing: border-box;
+        }
+
+        .cs-entries-widget .product-card-entries p {
+          font-family: 'Poppins', sans-serif;
+          font-weight: 700;
+          margin: 0;
+          font-size: 16px;
+          line-height: 22px;
+          width: auto;
+          text-align: center;
+          white-space: nowrap;
+          box-sizing: border-box;
+        }
+        .cs-entries-widget .product-card-entries:not(.has-real-multiplier) p {
+          padding-right: 0;
+        }
+
+        .cs-entries-widget .product-card-entries .multiplier-number {
+          background: var(--cs-mult-bg);
+          color: var(--cs-mult-text);
+          font-family: 'Poppins', sans-serif;
+          font-weight: 700;
+          font-size: 16px;
+          line-height: 22px;
+          height: 34px;
+          padding: 0 12px;
+          min-width: 4.2ch;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0 6px 6px 0;
+          position: absolute;
+          top: 0;
+          right: 0;
+          box-sizing: border-box;
+          box-shadow: 0 10px 18px rgba(0,0,0,.14);
+        }
+
+        /* When multiplier is showing: flex layout, no absolute positioning, no overlap */
+        .cs-entries-widget .product-card-entries.has-real-multiplier {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          box-shadow: none;
+          padding-right: 0;
+          overflow: visible;
+        }
+        .cs-entries-widget .product-card-entries.has-real-multiplier p {
+          display: flex;
+          align-items: center;
+          margin: 0;
+          padding-right: 0;
+        }
+        .cs-entries-widget .product-card-entries.has-real-multiplier .multiplier-number {
+          position: static;
+          display: flex;
+          margin-left: 0.75rem;
+          margin-right: -0.75rem;
+          height: 34px;
+          flex-shrink: 0;
+        }
+
+        .price-with-shipping .cs-entries-widget {
+          transform: translateY(-6px);
+        }
+
+    /* Bronze shimmer (same effect, +1s pause after each sweep) */
+    .product-card-entries.bronze {
+      background: linear-gradient(-45deg, var(--cs-badge-base) 40%, var(--cs-shimmer-highlight) 50%, var(--cs-badge-base) 60%);
+      background-size: 300%;
+      background-position: 100% 0;
+
+      /* was: 1s linear infinite */
+      animation: shimmer 2s linear infinite;
+      animation-delay: 3s; /* keep your original start delay */
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 100% 0; }
+      50%  { background-position:   0% 0; } /* 1s sweep (first half of 2s) */
+      100% { background-position:   0% 0; } /* 1s pause (hold) */
+    }
+
+    /* ========== MEMBERSHIP TIER MULTIPLIER STYLES ========== */
+    /* Silver tier multiplier */
+    .cs-entries-widget .product-card-entries .multiplier-number.multiplier--tier[data-tier-name="silver"] {
+      background: #666666 !important;
+      color: #ffffff !important;
+    }
+
+    /* Gold tier - uses default styling to avoid competing with View Now button */
+
+    /* Platinum tier multiplier */
+    .cs-entries-widget .product-card-entries .multiplier-number.multiplier--tier[data-tier-name="platinum"] {
+      background: #2D7D46 !important;
+      color: #ffffff !important;
+    }
+
+    /* ========== MEMBER BENEFIT CALLOUT ========== */
+    /* Make the widget a flex row so badge and callout sit side by side */
+    .cs-entries-widget {
+      display: flex !important;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .member-benefit-callout {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11px;
+      color: #666;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .member-benefit-callout__icon {
+      margin-right: 3px;
+    }
+
+    .member-benefit-callout__text strong {
+      color: #2D7D46;
+      font-weight: 600;
+    }
+
+    .member-benefit-callout__link {
+      text-decoration: none;
+      color: #666;
+      transition: color 0.2s ease;
+    }
+
+    .member-benefit-callout__link:hover {
+      color: #333;
+    }
+
+    .member-benefit-callout__link .member-benefit-callout__text strong {
+      color: #f68b1e;
+    }
+
+    .member-benefit-callout__link:hover .member-benefit-callout__text strong {
+      text-decoration: underline;
+    }
+
+    /* ========== MEMBER PRICE BLOCK (prices + savings combined) ========== */
+    .member-price-block__prices {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .member-price-block__discounted {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.2;
+      color: var(--color-foreground);
+    }
+
+    .member-price-block__original {
+      font-size: 1.125rem;
+      font-weight: 400;
+      font-family: 'Poppins', sans-serif;
+      color: #666;
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    .member-price-block__savings {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11px;
+      color: #2D7D46;
+      font-weight: 500;
+      margin-top: -12px;
+      padding: 2px 0;
+      width: fit-content;
+      flex-basis: 100%;
+    }
+
+    @media screen and (min-width: 750px) {
+      .member-price-block__discounted {
+        font-size: 1.75rem;
+      }
+      .member-price-block__original {
+        font-size: 1.25rem;
+      }
+    }
+
+    /* ========== PREVIEW MODE VISIBILITY ========== */
+    /* Preview elements hidden by default */
+    .member-price-block--preview {
+      display: none !important;
+    }
+
+    /* Show appropriate preview based on body data-membership-tier */
+    body[data-membership-tier="silver"] .member-price-block--preview-silver.member-price-block__prices {
+      display: inline-flex !important;
+    }
+    body[data-membership-tier="silver"] .member-price-block--preview-silver.member-price-block__savings {
+      display: block !important;
+    }
+    body[data-membership-tier="gold"] .member-price-block--preview-gold.member-price-block__prices {
+      display: inline-flex !important;
+    }
+    body[data-membership-tier="gold"] .member-price-block--preview-gold.member-price-block__savings {
+      display: block !important;
+    }
+    body[data-membership-tier="platinum"] .member-price-block--preview-platinum.member-price-block__prices {
+      display: inline-flex !important;
+    }
+    body[data-membership-tier="platinum"] .member-price-block--preview-platinum.member-price-block__savings {
+      display: block !important;
+    }
+
+    /* Hide non-member price when preview tier is active - TEMPORARILY DISABLED
+    body[data-membership-tier="silver"] .member-price-block--nonmember,
+    body[data-membership-tier="gold"] .member-price-block--nonmember,
+    body[data-membership-tier="platinum"] .member-price-block--nonmember {
+      display: none !important;
+    }
+    */
+  </style>
+
+  {%- liquid
+    assign cs_enabled = settings.cs_enable_widget
+    assign cs_show_multiplier = settings.cs_show_multiplier
+
+    assign raw_id = settings.cs_sweepstake_id | default: 'default'
+    assign sanitizedSweepstakeId = ''
+    assign digits = '0123456789'
+    assign chars = raw_id | split: ''
+
+    for ch in chars
+      if digits contains ch
+        assign sanitizedSweepstakeId = sanitizedSweepstakeId | append: ch
+      endif
+    endfor
+
+    if sanitizedSweepstakeId == ''
+      assign sanitizedSweepstakeId = 'default'
+    endif
+  -%}
+  {% if template.name == 'product' %}
+    {%- liquid
+      # Check if customer is a logged-in member and determine tier
+      assign is_logged_in_member = false
+      assign member_tier_name = ''
+      if customer
+        if customer.tags contains 'platinum-membership'
+          assign is_logged_in_member = true
+          assign member_tier_name = 'Platinum'
+        elsif customer.tags contains 'gold-membership'
+          assign is_logged_in_member = true
+          assign member_tier_name = 'Gold'
+        elsif customer.tags contains 'silver-membership'
+          assign is_logged_in_member = true
+          assign member_tier_name = 'Silver'
+        endif
+      endif
+
+      # Calculate member discount pricing
+      assign discount_percent = settings.membership_discount_percent | default: 10
+      assign original_price_cents = selected_variant.price
+      assign discount_amount_cents = original_price_cents | times: discount_percent | divided_by: 100
+      assign discounted_price_cents = original_price_cents | minus: discount_amount_cents
+
+      # Format prices for display
+      assign original_price_formatted = original_price_cents | money
+      assign discounted_price_formatted = discounted_price_cents | money
+      assign savings_formatted = discount_amount_cents | money
+    -%}
+    <div class="price-with-shipping">
+      {%- comment -%} ========== PRICES ========== {%- endcomment -%}
+      {%- comment -%}
+        MEMBER PRICING DISPLAY - TEMPORARILY DISABLED
+        To re-enable: change the condition below from "false" to "is_logged_in_member"
+        and uncomment the preview blocks for non-members
+      {%- endcomment -%}
+      {%- if false and is_logged_in_member -%}
+        <div class="member-price-block__prices">
+          <span class="member-price-block__discounted">{{ discounted_price_formatted }}</span>
+          <span class="member-price-block__original">{{ original_price_formatted }}</span>
+        </div>
+      {%- else -%}
+        <div class="member-price-block--nonmember">
+          {% render 'price',
+            show_unit_price: true,
+            product_resource: product_resource,
+            show_sale_price_first: block_settings.show_sale_price_first
+          %}
+        </div>
+        {%- comment -%} Preview blocks - temporarily hidden
+        <div class="member-price-block__prices member-price-block--preview member-price-block--preview-silver">
+          <span class="member-price-block__discounted">{{ discounted_price_formatted }}</span>
+          <span class="member-price-block__original">{{ original_price_formatted }}</span>
+        </div>
+        <div class="member-price-block__prices member-price-block--preview member-price-block--preview-gold">
+          <span class="member-price-block__discounted">{{ discounted_price_formatted }}</span>
+          <span class="member-price-block__original">{{ original_price_formatted }}</span>
+        </div>
+        <div class="member-price-block__prices member-price-block--preview member-price-block--preview-platinum">
+          <span class="member-price-block__discounted">{{ discounted_price_formatted }}</span>
+          <span class="member-price-block__original">{{ original_price_formatted }}</span>
+        </div>
+        {%- endcomment -%}
+      {%- endif -%}
+
+      {%- comment -%} ========== ENTRIES WIDGET ========== {%- endcomment -%}
+      {%- if cs_enabled -%}
+        <div
+          class="cs-entries-widget"
+          data-price-context="card"
+          data-product-id="{{ product_resource.id }}"
+          data-shop-gid="{{ shop.id }}"
+          data-sweepstake-id="{{ sanitizedSweepstakeId }}"
+          data-subtotal="{{ selected_variant.price | divided_by: 100.0 }}"
+          style="display:block;"
+        >
+          <div
+            class="product-card-entries bronze"
+            id="entries-container-{{ product_resource.id }}-{{ sanitizedSweepstakeId }}"
+          >
+            <p>
+              <span
+                id="entries-text-placeholder-thumb-{{ product_resource.id }}-{{ sanitizedSweepstakeId }}"
+              ></span>
+
+              {%- if cs_show_multiplier -%}
+                <span
+                  id="flash-text-dynamic-{{ product_resource.id }}"
+                  class="multiplier-number hidden"
+                ></span>
+              {%- endif -%}
+            </p>
+          </div>
+
+          {%- comment -%} Member Benefit Callout {%- endcomment -%}
+          {%- if settings.member_callout_enabled -%}
+            {%- liquid
+              assign pdp_is_member = false
+              assign pdp_member_tier = ''
+              assign pdp_member_multiplier = 1
+              if customer
+                if customer.tags contains 'platinum-membership'
+                  assign pdp_is_member = true
+                  assign pdp_member_tier = 'Platinum'
+                  assign pdp_member_multiplier = settings.membership_multiplier_platinum | default: 4
+                elsif customer.tags contains 'gold-membership'
+                  assign pdp_is_member = true
+                  assign pdp_member_tier = 'Gold'
+                  assign pdp_member_multiplier = settings.membership_multiplier_gold | default: 3
+                elsif customer.tags contains 'silver-membership'
+                  assign pdp_is_member = true
+                  assign pdp_member_tier = 'Silver'
+                  assign pdp_member_multiplier = settings.membership_multiplier_silver | default: 2
+                endif
+              endif
+            -%}
+            <div class="member-benefit-callout">
+              {%- if pdp_is_member -%}
+                <span class="member-benefit-callout__icon">✨</span><span class="member-benefit-callout__text">Earning <strong>{{ pdp_member_multiplier }}X</strong> as {{ pdp_member_tier }} Member</span>
+              {%- else -%}
+                <a href="/#membership-packages" class="member-benefit-callout__link"><span class="member-benefit-callout__icon">🎟️</span><span class="member-benefit-callout__text"><strong>Become a member</strong> for up to 4X entries</span></a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} ========== SAVINGS MESSAGE - TEMPORARILY DISABLED ========== {%- endcomment -%}
+      {%- comment -%}
+        To re-enable: change "false" to "is_logged_in_member" below
+        and uncomment the preview blocks
+      {%- endcomment -%}
+      {%- if false and is_logged_in_member -%}
+        <div class="member-price-block__savings">✓ You save {{ savings_formatted }} with your {{ member_tier_name }} membership</div>
+      {%- else -%}
+        {%- comment -%} Preview savings messages - temporarily hidden
+        <div class="member-price-block__savings member-price-block--preview member-price-block--preview-silver">✓ You save {{ savings_formatted }} with your Silver membership</div>
+        <div class="member-price-block__savings member-price-block--preview member-price-block--preview-gold">✓ You save {{ savings_formatted }} with your Gold membership</div>
+        <div class="member-price-block__savings member-price-block--preview member-price-block--preview-platinum">✓ You save {{ savings_formatted }} with your Platinum membership</div>
+        {%- endcomment -%}
+      {%- endif -%}
+    </div>
+  {% else %}
+    <div class="price-swatches-row">
+      <div class="price-wrapper">
+        {% render 'price',
+          show_unit_price: true,
+          product_resource: product_resource,
+          show_sale_price_first: block_settings.show_sale_price_first
+        %}
+      </div>
+      {% render 'product-card-swatches', product: product_resource %}
+    </div>
+  {% endif %}
+
+  {% if block_settings.show_tax_info %}
+    <div class="tax-note">
+      {%- if cart.duties_included and cart.taxes_included -%}
+        {{ 'content.duties_and_taxes_included' | t }}
+      {%- elsif cart.taxes_included -%}
+        {{ 'content.taxes_included' | t }}
+      {%- elsif cart.duties_included -%}
+        {{ 'content.duties_included' | t }}
+      {%- endif -%}
+
+      {%- if shop.shipping_policy.body != blank -%}
+        {{ 'content.shipping_policy' | t }}
+      {%- endif -%}
+    </div>
+  {% endif %}
+
+  {%- if selected_variant != blank and block_settings.show_installments -%}
+    <div class="installments">
+      {%- assign product_form_installment_id = 'product-form-installment-' | append: block.id -%}
+      {%- form 'product', product_resource, id: product_form_installment_id, class: 'payment-terms' -%}
+        <input
+          type="hidden"
+          name="id"
+          value="{{ selected_variant.id }}"
+        >
+        {{ form | payment_terms }}
+      {%- endform -%}
+    </div>
+  {%- endif -%}
+</product-price>
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .tax-note:empty {
+    display: none;
+  }
+
+  form.payment-terms {
+    padding-top: 0.5em;
+    font-size: min(0.85em, var(--font-paragraph--size));
+    font-weight: var(--font-paragraph--weight);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  .installments:not(:has(shopify-payment-terms)) {
+    display: none;
+  }
+
+  .price-with-shipping {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-sm);
+    flex-wrap: wrap;
+  }
+
+  .free-shipping-text {
+    color: #2d7d46;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
+
+  /* Product page specific - larger, bolder price */
+  .product-information product-price .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.2;
+    display: inline-block;
+    vertical-align: baseline;
+    letter-spacing: normal;
+    font-variant-numeric: lining-nums;
+    font-feature-settings: normal;
+    text-rendering: geometricPrecision;
+  }
+
+  .product-information product-price .compare-at-price {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  @media screen and (min-width: 750px) {
+    .product-information product-price .price {
+      font-size: 1.75rem;
+    }
+
+    .product-information product-price .compare-at-price {
+      font-size: 1.5rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_price",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_product_price"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:content.edit_price_in_theme_settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_price_first",
+      "label": "t:settings.show_sale_price_first",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_installments",
+      "label": "t:settings.installments",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tax_info",
+      "label": "t:settings.show_tax_info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "fit-content",
+          "label": "t:options.fit_content"
+        },
+        {
+          "value": "100%",
+          "label": "t:options.fill"
+        }
+      ],
+      "default": "100%"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "default": "left",
+      "visible_if": "{{ block.settings.width != 'fit-content' }}"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "color",
+      "label": "t:settings.color",
+      "options": [
+        {
+          "value": "var(--color-foreground)",
+          "label": "t:options.text"
+        },
+        {
+          "value": "var(--color-foreground-heading)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--color-primary)",
+          "label": "t:options.link"
+        }
+      ],
+      "default": "var(--color-foreground)",
+      "visible_if": "{{ block.settings.type_preset != 'rte' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_price",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}
+{% # theme-check-enable %}
