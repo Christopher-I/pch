@@ -15,7 +15,14 @@
     customerId: {{ customer.id | default: 'null' }},
     customerEmail: {{ customer.email | default: '""' | json }},
     loggedIn: {% if customer %}true{% else %}false{% endif %},
-    tier: {{ customer.metafields.pch.tier | default: '"gold"' | json }}
+    tier: "{{ customer.metafields.pch.tier | default: 'gold' }}"
+  };
+  window.__PCH_IMAGES__ = {
+    superprize: {{ 'ww-superprize.png' | asset_url | json }},
+    fordBronco: {{ 'ww-ford-bronco.png' | asset_url | json }},
+    chevySuburban: {{ 'ww-chevy-suburban.png' | asset_url | json }},
+    fordMustang: {{ 'ww-ford-mustang.png' | asset_url | json }},
+    subaruOutback: {{ 'ww-subaru-outback.png' | asset_url | json }}
   };
 </script>
 
