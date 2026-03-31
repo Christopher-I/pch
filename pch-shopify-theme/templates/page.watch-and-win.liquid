@@ -26,7 +26,65 @@
   };
 </script>
 
+<style>
+  /* Instant skeleton — shows before React loads, hidden once React mounts */
+  .ww-skeleton { max-width: 1280px; margin: 0 auto; padding: 24px 16px; }
+  .ww-skeleton-pulse { animation: ww-pulse 1.5s ease-in-out infinite; background: #e5e7eb; border-radius: 12px; }
+  @keyframes ww-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .ww-skeleton-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  .ww-skeleton-hero { height: 250px; }
+  .ww-skeleton-sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .ww-skeleton-sidebar-card { height: 100%; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; }
+  .ww-skeleton-sidebar-line { height: 16px; margin-bottom: 12px; border-radius: 4px; }
+  .ww-skeleton-sidebar-line.w60 { width: 60%; }
+  .ww-skeleton-sidebar-line.w40 { width: 40%; }
+  .ww-skeleton-sidebar-line.w80 { width: 80%; }
+  .ww-skeleton-sidebar-big { height: 48px; width: 50%; margin: 8px auto; border-radius: 8px; }
+  .ww-skeleton-progress { margin-top: 24px; height: 80px; border-radius: 12px; border: 1px solid #e5e7eb; }
+  .ww-skeleton-cards { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 24px; }
+  @media (min-width: 640px) {
+    .ww-skeleton { padding: 24px 24px; }
+    .ww-skeleton-hero { height: 350px; }
+    .ww-skeleton-cards { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .ww-skeleton { padding: 24px 32px; }
+    .ww-skeleton-grid { grid-template-columns: 2fr 1fr; gap: 2rem; }
+    .ww-skeleton-hero { height: 400px; }
+    .ww-skeleton-cards { grid-template-columns: repeat(4, 1fr); }
+  }
+  .ww-skeleton-card { height: 200px; }
+  .ww-skeleton-title { height: 24px; width: 200px; margin-top: 32px; margin-bottom: 16px; }
+  /* Hide skeleton once React mounts */
+  #watch-and-win-root:not(:empty) + .ww-skeleton { display: none; }
+</style>
+
 <div id="watch-and-win-root"></div>
+
+<!-- Skeleton shows instantly, disappears when React renders -->
+<div class="ww-skeleton">
+  <div class="ww-skeleton-grid">
+    <div class="ww-skeleton-pulse ww-skeleton-hero"></div>
+    <div class="ww-skeleton-sidebar">
+      <div class="ww-skeleton-sidebar-card">
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-line w60"></div>
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-line w40"></div>
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-big"></div>
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-line w80"></div>
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-line w60"></div>
+        <div class="ww-skeleton-pulse ww-skeleton-sidebar-line w80"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ww-skeleton-pulse ww-skeleton-progress"></div>
+  <div class="ww-skeleton-pulse ww-skeleton-title"></div>
+  <div class="ww-skeleton-cards">
+    <div class="ww-skeleton-pulse ww-skeleton-card"></div>
+    <div class="ww-skeleton-pulse ww-skeleton-card"></div>
+    <div class="ww-skeleton-pulse ww-skeleton-card"></div>
+    <div class="ww-skeleton-pulse ww-skeleton-card"></div>
+  </div>
+</div>
 
 {{ 'watch-and-win.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'watch-and-win.js' | asset_url }}" defer></script>
